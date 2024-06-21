@@ -1,0 +1,17 @@
+.nav {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.link {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+  padding: 10px;
+}
+
+.active {
+  color: #e91e63;
+  border-bottom: 2px solid #e91e63;
+}
