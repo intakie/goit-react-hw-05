@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import MovieList from '../../components/MovieList/MovieList';
 import { searchMovies } from '../../api';
@@ -7,33 +8,37 @@ import css from './MoviesPage.module.css';
 export default function MoviesPage() {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const handleSearch = async query => {
-    setLoading(true);
-    try {
-      const results = await searchMovies(query);
-      setMovies(results);
-      if (results.length === 0) {
-        setError('No movies found. Please try another search.');
-      } else {
-        setError('');
+  const query = searchParams.get('query') || '';
+
+  useEffect(() => {
+    if (!query) return;
+
+    const fetchMovies = async () => {
+      setLoading(true);
+      try {
+        const results = await searchMovies(query);
+        setMovies(results);
+      } catch (error) {
+        console.error('Error searching movies:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error searching movies:', error);
-      setError('Error searching movies. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
+    };
+
+    fetchMovies();
+  }, [query]);
+
+  const handleSearch = newQuery => {
+    setSearchParams(newQuery ? { query: newQuery } : {});
   };
 
   return (
     <div className={css.container}>
       <h1>Search Movies</h1>
-      <SearchBar onSubmit={handleSearch} />
-      {loading && <p>Loading...</p>}
-      {error && <p className={css.error}>{error}</p>}
-      {!loading && !error && <MovieList movies={movies} />}
+      <SearchBar onSubmit={handleSearch} initialValue={query} />
+      {loading ? <p>Loading...</p> : <MovieList movies={movies} />}
     </div>
   );
 }
